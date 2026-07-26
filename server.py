@@ -6,6 +6,7 @@ from email.mime.multipart import MIMEMultipart
 import random
 import datetime
 import requests
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -118,7 +119,7 @@ LOGIN_PAGE_HTML = """
         </div>
     </div>
     <script>
-        const API_URL = "http://127.0.0.1:5000/api";
+        const API_URL = "/api";
         function showToast(msg, type='success') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -805,7 +806,7 @@ PANEL_PAGE_HTML = """
     </div>
 
     <script>
-        const API_URL = "http://127.0.0.1:5000/api";
+        const API_URL = "/api";
         
         const currentUser = JSON.parse(localStorage.getItem('eropanel_current_user'));
         if (!currentUser) {
@@ -1309,7 +1310,7 @@ def update_role():
 def api_tc():
     tc = request.args.get('tc')
     if not tc or len(tc) != 11:
-        return jsonify({"success": False, "error": "Geçersiz TC Kimlik Numarası!"}), 400
+        return jsonify({"success": False, "error": "Geçersiz TC"}), 400
     try:
         response = requests.get(f"http://arastir.vip/api/tc.php?tc={tc}", timeout=5)
         if response.status_code == 200:
@@ -1318,10 +1319,10 @@ def api_tc():
             except Exception:
                 data = {"raw_response": response.text}
             if data:
-                return jsonify({"success": True, "query": tc, "data": data}), 200
-        return jsonify({"success": False, "error": f"Kayıt bulunamadı (Status: {response.status_code})"}), 404
+                return jsonify({"success": True, "data": data}), 200
+        return jsonify({"success": False, "error": "Kayıt bulunamadı"}), 404
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": "Sunucu hatası"}), 500
 
 @app.route('/api/adsoyad', methods=['GET'])
 def api_adsoyad():
@@ -1342,9 +1343,9 @@ def api_adsoyad():
                 data = {"raw_response": response.text}
             if data:
                 return jsonify({"success": True, "data": data}), 200
-        return jsonify({"success": False, "error": f"Kayıt bulunamadı (Status: {response.status_code})"}), 404
+        return jsonify({"success": False, "error": "Kayıt bulunamadı"}), 404
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)}), 500
+        return jsonify({"success": False, "error": "Sunucu hatası"}), 500
 
 @app.route('/api/aile', methods=['GET'])
 def api_aile():
@@ -1471,8 +1472,6 @@ def api_isyeri():
         return jsonify({"success": False, "error": "Kayıt bulunamadı"}), 404
     except Exception as e:
         return jsonify({"success": False, "error": "Sunucu hatası"}), 500
-
-import os
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
